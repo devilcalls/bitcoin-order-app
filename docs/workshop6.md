@@ -18,7 +18,7 @@ Every push to `githubcicd` runs `.github/workflows/build.yml`:
 8. Create a GitHub release for the generated tag.
 9. Publish the tested build to `gh-pages` using `npm run deploy -- --no-build`.
 
-GitHub Pages uses **Deploy from a branch**, with `gh-pages` and `/ (root)` as the publishing source.
+GitHub Pages uses **Deploy from a branch**, with `gh-pages` and `/ (root)` as the publishing source. Inherited GitHub Actions workflows were enabled on this fork before triggering the initial verification run.
 
 ## Authentication
 
