@@ -1,4 +1,4 @@
-import { Component, OnInit, Directive } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { BitcoinService } from '../services/bitcoin.service';
 import { ActivatedRoute, Router } from '@angular/router';

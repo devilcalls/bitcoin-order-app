@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnChanges } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { BitcoinService } from '../services/bitcoin.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,7 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./form.component.css']
 })
 
-export class FormComponent implements OnInit, AfterViewInit, OnChanges {
+export class FormComponent implements OnInit {
   orderTypeDefault = 'Buy';
   validAge = true;
   genderField: string;
@@ -22,14 +22,6 @@ export class FormComponent implements OnInit, AfterViewInit, OnChanges {
   constructor(private bitcoinSvc: BitcoinService,
               private activatedRoute: ActivatedRoute,
               private router: Router) { }
-
-  ngAfterViewInit() {
-
-  }
-
-  ngOnChanges() {
-
-  }
 
   ngOnInit() {
     this.orderTypeDefault = this.activatedRoute.snapshot.params.orderType;
@@ -51,7 +43,7 @@ export class FormComponent implements OnInit, AfterViewInit, OnChanges {
   processForm(f: NgForm, myPrice, myAmt) {
     const orderType = this.buy ? 'Buy' : 'Sell';
     console.log(orderType);
-    const x = this.bitcoinSvc.saveOrderDetails(f.value, myPrice, myAmt, orderType).then(result => {
+    this.bitcoinSvc.saveOrderDetails(f.value, myPrice, myAmt, orderType).then(result => {
       console.log(result);
       this.router.navigate(['/confirm', result.id]);
     });

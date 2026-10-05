@@ -1,70 +1,81 @@
-name: Bitcoin order App xxxx
+name: Bitcoin order App
+
 on:
   push:
     branches:
       - githubcicd
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bitcoin-order-pages
+  cancel-in-progress: false
+
 jobs:
   ci:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x]
-
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v2
-      - uses: browser-actions/setup-chrome@latest
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          fetch-depth: 0
+          token: ${{ secrets.WORKSHOP6_GITHUB_TOKEN }}
 
-      - name: Cache node modules
-        id: cache-nodemodules
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
+      # Angular 13 requires this legacy runtime. Action runtimes are independent.
+      - name: Use Node.js 16.20.2
+        uses: actions/setup-node@v4
         with:
-          # caching node_modules
-          path: node_modules
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          node-version: '16.20.2'
+          cache: npm
+
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+
       - name: Install Dependencies
-        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
-        run: |
-          npm ci --force
+        run: npm ci --no-audit --no-fund
+
       - name: Build
-        run: |
-          npm run build --force
+        run: npm run build
+
       - name: Lint
-        run: |
-          npm run lint
-      - name: Update types to latest
-        run: |
-          npm install --save-dev @types/node@latest --force
-      #- name: Test
-      #  run: |
-      #    npm run test --watch=false --browsers=ChromeHeadless
+        run: npm run lint
+
+      - name: Test
+        env:
+          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm test
+
       - name: Conventional Changelog Action
         id: changelog
-        uses: TriPSs/conventional-changelog-action@v3
+        uses: TriPSs/conventional-changelog-action@v6
         with:
           github-token: ${{ secrets.WORKSHOP6_GITHUB_TOKEN }}
-          output-file: "false"
+          output-file: 'false'
+          skip-git-pull: 'true'
+          skip-version-file: 'true'
+          skip-commit: 'true'
 
       - name: Create Release
-        uses: actions/create-release@v1
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        uses: actions/github-script@v7
         env:
           GITHUB_TOKEN: ${{ secrets.WORKSHOP6_GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.changelog.outputs.tag }}
+          RELEASE_NOTES: ${{ steps.changelog.outputs.clean_changelog }}
         with:
-          tag_name: ${{ steps.changelog.outputs.tag }}
-          release_name: ${{ steps.changelog.outputs.tag }}
-          body: ${{ steps.changelog.outputs.clean_changelog }}
-      - name: Deploy
-        run: |
-          npm run deploy
+          github-token: ${{ env.GITHUB_TOKEN }}
+          script: |
+            await github.rest.repos.createRelease({
+              ...context.repo,
+              tag_name: process.env.RELEASE_TAG,
+              name: process.env.RELEASE_TAG,
+              body: process.env.RELEASE_NOTES
+            });
 
+      - name: Deploy
+        env:
+          GH_TOKEN: ${{ secrets.WORKSHOP6_GITHUB_TOKEN }}
+        run: npm run deploy -- --no-build --name='github-actions[bot]' --email='41898282+github-actions[bot]@users.noreply.github.com'

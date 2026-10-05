@@ -1,4 +1,8 @@
-# Bitcoin Web App n
+# Bitcoin order app
+
+Workshop 6 CI/CD setup and verification commands: [docs/workshop6.md](docs/workshop6.md).
+
+Deployed frontend: https://devilcalls.github.io/bitcoin-order-app/
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 8.3.6.
 

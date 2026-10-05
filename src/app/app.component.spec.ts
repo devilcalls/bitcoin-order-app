@@ -1,12 +1,18 @@
 import { TestBed, async } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule
+        RouterTestingModule,
+        NoopAnimationsModule,
+        MatToolbarModule,
+        MatButtonModule
       ],
       declarations: [
         AppComponent
@@ -26,10 +32,13 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('bitcoin');
   });
 
-  // it('should render title', () => {
-  //   const fixture = TestBed.createComponent(AppComponent);
-  //   fixture.detectChanges();
-  //   const compiled = fixture.debugElement.nativeElement;
-  //   expect(compiled.querySelector('.mat-toolbar .mat-toolbar-row span').textContent).toContain('Bitcoin Changer v2');
-  // });
+  it('should render the toolbar and order buttons', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.debugElement.nativeElement;
+    expect(compiled.querySelector('mat-toolbar').textContent).toContain('Bitcoin Changer v1.2');
+    const buttons = compiled.querySelectorAll('button');
+    expect(buttons[0].textContent.trim()).toBe('Buy');
+    expect(buttons[1].textContent.trim()).toBe('Sell');
+  });
 });
